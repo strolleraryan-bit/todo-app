@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>todo list by Aryan</title>
+<meta name="description" content="A stylish, animated day-to-day to-do list with reminders, notifications, and quick text-to-tasks." />
+<meta name="theme-color" content="#14151c" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/favicon.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Todo · Aryan" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <div class="hero-top">
+      <span class="eyebrow">Content · Code · Checklist</span>
+      <button class="hamburger-btn" id="hamburgerBtn" title="Menu" aria-label="Open menu" aria-haspopup="dialog">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <h1>todo list<span class="by">by Aryan</span></h1>
+    <div class="save-indicator" id="saveIndicator">Saved</div>
+
+    <div class="stats-row">
+      <div class="ring-wrap">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle class="ring-bg" cx="26" cy="26" r="21"></circle>
+          <circle class="ring-fg" id="ringFg" cx="26" cy="26" r="21" stroke-dasharray="132" stroke-dashoffset="132"></circle>
+        </svg>
+        <div class="ring-pct" id="ringPct">0%</div>
+      </div>
+      <div class="stat-text">
+        <b id="doneCount">0</b> of <b id="totalCount">0</b> tasks done
+        <span class="sub" id="statSub">Add your first ticket below</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="streak-panel" id="streakPanel">
+    <div class="streak-panel-top">
+      <span class="streak-panel-flame">🔥</span>
+      <div class="streak-panel-heading">
+        <span class="streak-panel-count-line"><b id="streakPanelCount">0</b> <span id="streakPanelDayWord">days</span> streak</span>
+        <p class="streak-panel-info">Streaks are built by completing every ticket tagged <span class="streak-tag-chip">#daily must</span> before the day ends — miss one, and the streak resets.</p>
+      </div>
+    </div>
+    <div class="streak-panel-progress">
+      <div class="streak-progress-track"><div class="streak-progress-fill" id="streakProgressFill"></div></div>
+      <div class="streak-progress-label" id="streakProgressLabel">No #daily must targets logged for today yet.</div>
+    </div>
+  </section>
+
+  <section class="composer">
+    <div class="composer-heading"><span class="spark">✦</span> What needs doing today?</div>
+    <form id="addForm">
+      <input id="taskInput" placeholder="Type a task and hit enter…" autocomplete="off" maxlength="140" />
+      <div class="composer-row">
+        <div class="prio-pill" id="prioPicker">
+          <button type="button" data-p="low"><span class="dot" style="background:var(--blue)"></span>Low</button>
+          <button type="button" data-p="med" class="active"><span class="dot" style="background:var(--yellow)"></span>Med</button>
+          <button type="button" data-p="high"><span class="dot" style="background:var(--coral)"></span>High</button>
+        </div>
+        <div class="due-field">
+          <input type="date" id="dueInput" title="Due date" />
+          <button type="button" id="dueTodayBtn" class="due-today-btn hidden" title="Reset to today">Today</button>
+        </div>
+        <div class="remind-select" title="Reminder time (needs a due date)">
+          <span>🔔</span>
+          <input type="time" id="remindInput" />
+        </div>
+        <div class="repeat-select">
+          <span>↻</span>
+          <select id="repeatSelect">
+            <option value="none">No repeat</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <button type="submit" class="ripple-host">＋ Add ticket</button>
+      </div>
+      <div class="tag-select composer-tag-select" id="composerTagSelect">
+        <button type="button" class="tag-select-btn" id="composerTagSelectBtn" aria-haspopup="listbox" aria-expanded="false">
+          <span class="tag-select-swatch none" id="composerTagSelectSwatch"></span>
+          <span class="tag-select-value" id="composerTagSelectValue">None</span>
+          <svg class="tag-select-caret" viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg>
+        </button>
+        <div class="tag-select-menu" id="composerTagSelectMenu" role="listbox"></div>
+      </div>
+    </form>
+  </section>
+
+  <div class="date-nav" id="dateNav">
+    <button class="dn-arrow" id="dnPrev" title="Previous day">‹</button>
+    <button class="dn-label" id="dnLabel" title="Open calendar"><span class="dn-label-inner"></span></button>
+    <button class="dn-arrow" id="dnNext" title="Next day">›</button>
+    <button class="dn-pill" id="dnToday">Today</button>
+    <button class="dn-pill dn-pdf" id="dnPdf">⬇ PDF</button>
+    <button class="dn-exit" id="dnExit" title="Exit calendar view">✕</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="tabs" id="filterTabs">
+      <button data-filter="all" class="active">All</button>
+      <button data-filter="active">Active</button>
+      <button data-filter="done">Done</button>
+    </div>
+    <div class="toolbar-right">
+      <select id="sortSelect" title="Sort by">
+        <option value="manual">Manual order</option>
+        <option value="priority">By priority</option>
+        <option value="due">By due date</option>
+        <option value="newest">Newest first</option>
+      </select>
+      <input id="searchInput" placeholder="Search…" />
+    </div>
+  </div>
+
+  <section class="tags-block" id="tagsBlock">
+    <div class="tags-block-head">
+      <span class="tags-block-title"><span class="tags-block-icon">🏷</span> Tags</span>
+      <button class="manage-tags-btn" id="manageTagsBtn" title="Add, rename, or delete tags">
+        <span class="manage-tags-btn-icon">⚙</span> Manage tags
+      </button>
+    </div>
+    <div class="tag-filter-row" id="tagFilterRow"></div>
+  </section>
+  <div class="bulk-row" id="bulkRow">
+    <button id="clearCompletedBtn">Clear completed</button>
+  </div>
+
+  <ul class="list manual-sort" id="list"></ul>
+
+  <div class="empty-state" id="emptyState">
+    <div class="glyph">✧</div>
+    <div class="msg" id="emptyMsg">Nothing here yet — add your first ticket.</div>
+  </div>
+
+  <input type="file" id="jsonFileInput" accept="application/json,.json" style="display:none" />
+</div>
+
+<!-- ---------- FAB COLUMN (always-visible, vertical, no collapse) ---------- -->
+<div class="fab-row" id="fabRow">
+  <button class="fab-sm ripple-host" id="parseFab" title="Generate tasks from text">📝</button>
+  <button class="fab-sm ripple-host" id="calendarToggle" title="Calendar view">📅</button>
+  <button class="fab-sm ripple-host" id="themeToggle" title="Toggle theme">☾</button>
+  <!-- Today is hidden automatically whenever you're already viewing today. -->
+  <button class="fab-sm fab-today ripple-host" id="todayFab" title="Go to today">📍</button>
+</div>
+
+<div class="toast" id="toast">
+  <span id="toastMsg">Deleted</span>
+  <button id="undoBtn">Undo</button>
+  <button id="redoBtn" class="redo hidden">Redo</button>
+</div>
+
+<!-- Top-left activity notifications: fires for add / delete / edit / move,
+     separate from the bottom undo/redo toast. -->
+<div class="activity-stack" id="activityStack" aria-live="polite"></div>
+
+
+<div class="modal-overlay" id="pickerOverlay">
+  <div class="modal picker-modal">
+    <h3>Jump to a date</h3>
+    <div class="picker-head">
+      <button class="dn-arrow" id="pickerPrevMonth">‹</button>
+      <span id="pickerMonthLabel"></span>
+      <button class="dn-arrow" id="pickerNextMonth">›</button>
+    </div>
+    <div class="picker-weekdays">
+      <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+    </div>
+    <div class="picker-grid" id="pickerGrid"></div>
+    <div class="picker-legend"><span class="dot has"></span> has tasks</div>
+    <div class="modal-actions">
+      <button class="ghost" id="pickerClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="parseOverlay">
+  <div class="modal parse-modal">
+    <h3>Text → tasks</h3>
+    <p>Write or paste text below. Split each task with a comma (new lines also work), optionally tag them all at once, and tap Generate.</p>
+    <textarea id="parseArea" placeholder="e.g. buy groceries, call the bank, revise polity notes, water plants"></textarea>
+    <div class="parse-count" id="parseCount">0 tasks detected</div>
+    <div class="parse-preview" id="parsePreview"></div>
+    <div class="parse-tag-row">
+      <label>Tag all of these with</label>
+      <div class="tag-select" id="parseTagSelect">
+        <button type="button" class="tag-select-btn" id="parseTagSelectBtn" aria-haspopup="listbox" aria-expanded="false">
+          <span class="tag-select-swatch none" id="parseTagSelectSwatch"></span>
+          <span class="tag-select-value" id="parseTagSelectValue">None</span>
+          <svg class="tag-select-caret" viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg>
+        </button>
+        <div class="tag-select-menu" id="parseTagSelectMenu" role="listbox"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" id="parseClose">Close</button>
+      <button class="primary" id="parseGenerate">Generate tasks</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="notifOverlay">
+  <div class="modal notif-modal">
+    <h3>Notifications &amp; reminders</h3>
+    <p>Get a system notification — with sound and vibration — for reminders you set on a ticket.</p>
+
+    <div class="notif-row">
+      <div>
+        <span class="lbl">Enable notifications</span>
+        <span class="sub">Needed once, in this browser</span>
+      </div>
+      <button class="switch" id="notifSwitch"></button>
+    </div>
+    <div class="notif-status" id="notifStatus">Checking permission…</div>
+    <button class="notif-testbtn ripple-host" id="notifTestBtn">Send a test notification</button>
+
+    <div class="modal-actions">
+      <button class="ghost" id="notifClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="manageTagsOverlay">
+  <div class="modal manage-tags-modal">
+    <h3>🏷 Manage tags</h3>
+    <p>This is the only place tags are created, renamed, or deleted. Tasks just pick from this list.</p>
+    <div class="tag-add-row">
+      <input id="newTagInput" placeholder="New tag name…" maxlength="24" autocomplete="off" />
+      <button class="primary" id="newTagAddBtn">+ Add</button>
+    </div>
+    <div class="manage-tags-list" id="manageTagsList"></div>
+    <div class="modal-actions">
+      <button class="ghost" id="manageTagsClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="tagPdfPickOverlay">
+  <div class="modal tag-pdf-pick-modal">
+    <h3>📄 Export by Tag</h3>
+    <p>Pick a tag — the PDF will list its active tasks in red and completed tasks in green.</p>
+    <div class="manage-tags-list" id="tagPdfPickList"></div>
+    <div class="modal-actions">
+      <button class="ghost" id="tagPdfPickClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="tagDeleteConfirmOverlay">
+  <div class="modal tag-delete-confirm-modal">
+    <h3>Delete <span id="tagDeleteConfirmName">#tag</span>?</h3>
+    <p id="tagDeleteConfirmBody">This tag is used on some tasks. What should happen to them?</p>
+    <div class="modal-actions tag-delete-confirm-actions">
+      <button class="ghost" id="tagDeleteCancel">Cancel</button>
+      <button class="ghost" id="tagDeleteKeepTasks">Keep tasks, remove tag</button>
+      <button class="danger" id="tagDeleteWithTasks">Delete tag &amp; its tasks</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="menuOverlay">
+  <div class="modal menu-modal">
+    <h3>☰ Menu</h3>
+    <p>Notifications, exports, and backup — all in one place.</p>
+    <div class="menu-list">
+      <button class="menu-item" id="notifFab">
+        <span class="menu-item-icon">🔔</span><span class="menu-item-label">Notifications</span><span class="menu-item-arrow">›</span>
+      </button>
+      <div class="menu-section-label">Export as PDF</div>
+      <button class="menu-item" id="exportAllPdfBtn" title="Download all active + done tasks as PDF">
+        <span class="menu-item-icon">📄</span><span class="menu-item-label">Export all as PDF</span><span class="menu-item-arrow">›</span>
+      </button>
+      <button class="menu-item" id="exportActivePdfBtn" title="Download only active tasks as a large-print PDF">
+        <span class="menu-item-icon">📄</span><span class="menu-item-label">Export Active as PDF</span><span class="menu-item-arrow">›</span>
+      </button>
+      <button class="menu-item" id="exportDonePdfBtn" title="Download only completed tasks as a large-print PDF">
+        <span class="menu-item-icon">📄</span><span class="menu-item-label">Export Done as PDF</span><span class="menu-item-arrow">›</span>
+      </button>
+      <button class="menu-item" id="exportTagPdfBtn" title="Download active + done tasks for one tag as PDF">
+        <span class="menu-item-icon">🏷</span><span class="menu-item-label">Export by Tag as PDF</span><span class="menu-item-arrow">›</span>
+      </button>
+      <div class="menu-section-label">Backup</div>
+      <button class="menu-item" id="downloadJsonBtn">
+        <span class="menu-item-icon">⬇</span><span class="menu-item-label">Backup (json)</span><span class="menu-item-arrow">›</span>
+      </button>
+      <button class="menu-item" id="uploadJsonBtn">
+        <span class="menu-item-icon">⬆</span><span class="menu-item-label">Restore (json)</span><span class="menu-item-arrow">›</span>
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" id="menuClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" defer></script>
+<script src="js/app.js" defer></script>
+</body>
+</html>
